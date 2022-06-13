@@ -50,6 +50,16 @@ PC2 = [14, 17, 11, 24, 1, 5,
         44, 49, 39, 56, 34, 53,
         46, 42, 50, 36, 29, 32]
 
+# Initial Permutation to the message data
+IP  =  [58, 50, 42, 34, 26, 18, 10, 2, 
+        60, 52, 44, 36, 28, 20, 12, 4, 
+        62, 54, 46, 38, 30, 22, 14, 6, 
+        64, 56, 48, 40, 32, 24, 16, 8, 
+        57, 49, 41, 33, 25, 17, 9, 1, 
+        59, 51, 43, 35, 27, 19, 11, 3,
+        61, 53, 45, 37, 29, 21, 13, 5,
+        63, 55, 47, 39, 31, 23, 15, 7]
+
 # assume input string has already been converted into hex
 def str2binary(inputString):
     # get length of input
@@ -126,6 +136,32 @@ def formKeyArray(inputArray):
 
     return key_array
 
+# Rearrange the message using IP
+def genPermutedMsg(message, dict):
+    permutedMsg = ""
+    for i in range(0, len(dict)):
+        # subtract 1 from index as python is 0 indexed
+        permutedMsg += message[dict[i]-1]
+
+    return permutedMsg
+
+# #Form PermutedMsg into left and right halves 
+# def genLR(permutedMsg, key): 
+#     # Create empty 34x32 array for LnRn pairs.  
+#     LR_array = [0]*34; 
+
+#     # Initialize L0 and R0
+#     LR_array[0] = permutedMsg[0:32]
+#     LR_array[1] = permutedMsg[32:64]
+
+#     # Initialize remaining Ln and Rn
+#     for i in range(2, 33, 2): 
+#         Ln = LR_array[i - 1]; 
+#         Rn = Ln[i-1] 
+
+
+    
+
 # using sample message and key from https://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
 # to ensure tha tthe algorithim is working correctly
 
@@ -193,3 +229,8 @@ for i in range(0, 16):
         print("KEY", int(i+1), " MATCH")
     else:
          print("KEY", int(i+1), " ERROR")
+
+print('\n')
+permutedMsg = genPermutedMsg(message_binary, IP)
+print(permutedMsg)
+
