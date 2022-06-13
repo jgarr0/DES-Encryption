@@ -40,6 +40,16 @@ PC1 = [57, 49, 41,33, 25, 17, 9,
         14, 6, 61,53, 45, 37, 29,
         21, 13, 5,28, 20, 12, 4]
 
+# permutations to form the nth key
+PC2 = [14, 17, 11, 24, 1, 5,
+        3, 28, 15, 6, 21, 10,
+        23, 19, 12, 4, 26, 8,
+        16, 7, 27, 20, 13, 2,
+        41, 52, 31, 37, 47, 55,
+        30, 40, 51, 45, 33, 48,
+        44, 49, 39, 56, 34, 53,
+        46, 42, 50, 36, 29, 32]
+
 # assume input string has already been converted into hex
 def str2binary(inputString):
     # get length of input
@@ -56,14 +66,14 @@ def str2binary(inputString):
 
     return binString
 
-# function to form the first key
-def genKey1(inputString):
-    key1 = ""
-    for i in range(0, 56):
+# function to form keys
+def genKey(inputString, dict):
+    key = ""
+    for i in range(0, len(dict)):
         # subtract 1 from index as python is 0 indexed
-        key1 += inputString[PC1[i]-1]
+        key += inputString[dict[i]-1]
 
-    return key1
+    return key
 
 # function to form C and D (right and left halves of the key)
 def genCD(inputString):
@@ -104,6 +114,18 @@ def genCD(inputString):
 
     return CD_array
 
+def formKeyArray(inputArray):
+    key_array = [0] * 17
+    # fill k0
+    key_array[0] = inputArray[0] + inputArray[1]
+
+    #fill kn
+    for i in range(2, 33, 2):
+        temp = inputArray[i] + inputArray[i+1]
+        key_array[int(i/2)] = genKey(temp, PC2)
+
+    return key_array
+
 # using sample message and key from https://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
 # to ensure tha tthe algorithim is working correctly
 
@@ -122,10 +144,11 @@ key_binary = str2binary(sample_key)
 print(key_binary)
 print("test key binary == known key binary: ", sample_key_binary == key_binary, "\n")
 
-KP_binary = genKey1(key_binary)
+KP_binary = genKey(key_binary, PC1)
 print(KP_binary)
 print("test KP binary == known KP binary: ", sample_KP_binary == KP_binary, "\n")
 
+# generate cn and dn
 key_parts = genCD(KP_binary)
 
 # check that cn and dn match the provided values
@@ -141,3 +164,32 @@ for i in range(2, 34, 2):
         print("c", int(i/2), " d", int(i/2), " MATCH")
     else:
         print("c", int(i/2), " d", int(i/2), " ERROR")
+
+# combine cn and dn and form their respective keys
+key_array = formKeyArray(key_parts)
+
+# check compared to provided keys
+known_key_aray = ["000110110000001011101111111111000111000001110010",
+                  "011110011010111011011001110110111100100111100101",
+                  "010101011111110010001010010000101100111110011001",
+                  "011100101010110111010110110110110011010100011101",
+                  "011111001110110000000111111010110101001110101000",
+                  "011000111010010100111110010100000111101100101111",
+                  "111011001000010010110111111101100001100010111100",
+                  "111101111000101000111010110000010011101111111011",
+                  "111000001101101111101011111011011110011110000001",
+                  "101100011111001101000111101110100100011001001111",
+                  "001000010101111111010011110111101101001110000110",
+                  "011101010111000111110101100101000110011111101001",
+                  "100101111100010111010001111110101011101001000001",
+                  "010111110100001110110111111100101110011100111010",
+                  "101111111001000110001101001111010011111100001010",
+                  "110010110011110110001011000011100001011111110101"]
+
+print('\n')
+
+for i in range(0, 16):
+    if(known_key_aray[i] == key_array[i+1]):
+        print("KEY", int(i+1), " MATCH")
+    else:
+         print("KEY", int(i+1), " ERROR")
