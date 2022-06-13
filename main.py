@@ -60,6 +60,16 @@ IP  =  [58, 50, 42, 34, 26, 18, 10, 2,
         61, 53, 45, 37, 29, 21, 13, 5,
         63, 55, 47, 39, 31, 23, 15, 7]
 
+# Exansion table from 32 bit input to 48 bit output
+E = [32, 1, 2, 3, 4, 5, 
+     4, 5, 6, 7, 8, 9, 
+     8, 9, 10, 11, 12, 13, 
+     12, 13, 14, 15, 16, 17,
+     16, 17, 18, 19, 20, 21, 
+     20, 21, 22, 23, 24, 25, 
+     24, 25, 26, 27, 28, 29, 
+     28, 29, 30, 31, 32, 1]
+
 # assume input string has already been converted into hex
 def str2binary(inputString):
     # get length of input
@@ -76,14 +86,14 @@ def str2binary(inputString):
 
     return binString
 
-# function to form keys
-def genKey(inputString, dict):
-    key = ""
+# function to form keys and encode data
+def permutation(inputString, dict):
+    permutation = ""
     for i in range(0, len(dict)):
         # subtract 1 from index as python is 0 indexed
-        key += inputString[dict[i]-1]
+        permutation += inputString[dict[i]-1]
 
-    return key
+    return permutation
 
 # function to form C and D (right and left halves of the key)
 def genCD(inputString):
@@ -132,18 +142,9 @@ def formKeyArray(inputArray):
     #fill kn
     for i in range(2, 33, 2):
         temp = inputArray[i] + inputArray[i+1]
-        key_array[int(i/2)] = genKey(temp, PC2)
+        key_array[int(i/2)] = permutation(temp, PC2)
 
     return key_array
-
-# Rearrange the message using IP
-def genPermutedMsg(message, dict):
-    permutedMsg = ""
-    for i in range(0, len(dict)):
-        # subtract 1 from index as python is 0 indexed
-        permutedMsg += message[dict[i]-1]
-
-    return permutedMsg
 
 # #Form PermutedMsg into left and right halves 
 # def genLR(permutedMsg, key): 
@@ -180,7 +181,7 @@ key_binary = str2binary(sample_key)
 print(key_binary)
 print("test key binary == known key binary: ", sample_key_binary == key_binary, "\n")
 
-KP_binary = genKey(key_binary, PC1)
+KP_binary = permutation(key_binary, PC1)
 print(KP_binary)
 print("test KP binary == known KP binary: ", sample_KP_binary == KP_binary, "\n")
 
@@ -231,6 +232,6 @@ for i in range(0, 16):
          print("KEY", int(i+1), " ERROR")
 
 print('\n')
-permutedMsg = genPermutedMsg(message_binary, IP)
+permutedMsg = permutation(message_binary, IP)
 print(permutedMsg)
 
