@@ -187,7 +187,6 @@ class DES:
         for i in range(0, len(dict)):
             # subtract 1 from index as python is 0 indexed
             permutation += inputString[(dict[i]-1)]
-            #print(permutation)
 
         return permutation
 
@@ -307,13 +306,27 @@ class DES:
         return final_permutation
 
     ############################################################################################################################
+    # internal decryption process
+
+    def dec_formKeyArray(self, inputArray):
+        key_array = [0] * 16
+        #fill kn
+        for i in range(2, 34, 2):
+            temp = inputArray[i] + inputArray[i+1]
+            key_array[int(i/2)-1] = self.permutation(temp, self.PC2)
+
+            reverse_key_array = key_array[::-1]
+        print(reverse_key_array)
+        return reverse_key_array
+
+    ############################################################################################################################
     # external encrypt/decrypt function
 
     # encrypt function
     def encryptDES(self):
         # catch invalid message
         if(self.message == "" or self.message.isspace()):
-            print("Cannot have an empty message")
+            print("Cannot have an empty encrypted  message")
             return
 
         # catch invalid key
@@ -324,10 +337,42 @@ class DES:
         # begin encryption process
         self.message_binary = self.str2binary(self.message)
         self.key_binary = self.str2binary(self.key)
+
+        print("OG Message: ", self.message_binary)
  
         # save key array and encrypted message within instance of class
         self.key_array = self.formKeyArray(self.genCD(self.permutation(self.key_binary, self.PC1)))
+        print("Keys: ", self.key_array, "\n")
         self.encrypted_message = self.genLR(self.permutation(self.message_binary, self.IP), self.key_array)
 
         # return encrypted message
         return self.encrypted_message
+
+    def decryptDES(self, cyphertext = None, trykey = None):
+            # use instance variables if no parameters pased
+            if trykey is None:
+                trykey = self.key_binary
+            else:
+                trykey = self.str2binary(trykey)
+
+            if cyphertext is None:
+                cyphertext = self.encrypted_message
+
+            print("cyphertext:", cyphertext)
+            # catch invalid message
+            if(cyphertext == "" or cyphertext.isspace()):
+                print("Cannot have an empty message")
+                return
+
+            # catch invalid key
+            if(trykey == "" or trykey.isspace()):
+                print("Cannot have an empty key")
+                return
+
+            # save key array and encrypted message within instance of class
+            dec_key_array = self.dec_formKeyArray(self.genCD(self.permutation(trykey, self.PC1)))
+            print(dec_key_array)
+            decrypted_message = self.genLR(self.permutation(cyphertext, self.IP), dec_key_array)
+
+            # return encrypted message
+            return decrypted_message
