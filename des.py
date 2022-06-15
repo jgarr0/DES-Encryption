@@ -1,3 +1,4 @@
+import text
 class DES:
     ############################################################################################################################
     # permutation tables and dictionaries required by the DES algorithim
@@ -138,6 +139,7 @@ class DES:
     message = ""
     message_binary = ""
     key = ""
+    key_binary = ""
     key_array = [0] * 16
     encrypted_message = ""
     
@@ -145,8 +147,8 @@ class DES:
     # intenral function definitions
 
     def __init__(self, message = "", key = ""): 
-        self.message = message
-        self.key = key
+        self.message = text.str2hex(message, 16)
+        self.key = text.str2hex(key, 16)
 
     # xor two strings
     def xor(self, str1, str2):
@@ -168,6 +170,7 @@ class DES:
     # assume input string has already been converted into hex
     def str2binary(self, inputString):
         # get length of input
+        inputString = str(inputString)
         strLen = len(inputString)
 
         # return 0 if empty
@@ -316,7 +319,7 @@ class DES:
             key_array[int(i/2)-1] = self.permutation(temp, self.PC2)
 
             reverse_key_array = key_array[::-1]
-        print(reverse_key_array)
+        #print(reverse_key_array)
         return reverse_key_array
 
     ############################################################################################################################
@@ -342,23 +345,36 @@ class DES:
  
         # save key array and encrypted message within instance of class
         self.key_array = self.formKeyArray(self.genCD(self.permutation(self.key_binary, self.PC1)))
-        print("Keys: ", self.key_array, "\n")
+        #print("Keys: ", self.key_array, "\n")
         self.encrypted_message = self.genLR(self.permutation(self.message_binary, self.IP), self.key_array)
 
         # return encrypted message
         return self.encrypted_message
 
-    def decryptDES(self, cyphertext = None, trykey = None):
+    # default tpe is binary as that is what is saved in object
+    def decryptDES(self, cyphertext = '', trykey = '', cyphertexttype = 'b'):
             # use instance variables if no parameters pased
-            if trykey is None:
+            if not trykey:
                 trykey = self.key_binary
             else:
-                trykey = self.str2binary(trykey)
-
-            if cyphertext is None:
+                trykey = self.str2binary(text.str2hex(trykey, 16))
+            
+            if not cyphertext:
                 cyphertext = self.encrypted_message
+            # determine if cypher text is ascii or hex or binary
+            else:
+                # binary does nothing
+                if(cyphertexttype == 'b' or cyphertexttype == 'B'):
+                    cyphertext = text.modifyLength(cyphertext, 64)
+                # hex
+                elif(cyphertexttype == 'h' or cyphertexttype == 'H'):
+                    cyphertext = self.str2binary(text.modifyLength(cyphertext, 16))
+                # ascii
+                elif(cyphertexttype == 'a' or cyphertexttype == 'A'):
+                    cyphertext = self.str2binary(text.str2hex(cyphertext, 16))
+                else:
+                    return
 
-            print("cyphertext:", cyphertext)
             # catch invalid message
             if(cyphertext == "" or cyphertext.isspace()):
                 print("Cannot have an empty message")
@@ -371,7 +387,7 @@ class DES:
 
             # save key array and encrypted message within instance of class
             dec_key_array = self.dec_formKeyArray(self.genCD(self.permutation(trykey, self.PC1)))
-            print(dec_key_array)
+            #print(dec_key_array)
             decrypted_message = self.genLR(self.permutation(cyphertext, self.IP), dec_key_array)
 
             # return encrypted message
